@@ -1,18 +1,21 @@
 #include<iostream>
 #include<fstream>
 #include<cmath>
-#include<algorithm>
-//#include<Eigen/Dense>
+#include<Eigen/Dense>
 #include<GL/glew.h>
-#include<GLFW/glfw3.h>
 #include<glm/glm.hpp>
-#include<glm/gtc/matrix_transform.hpp>
-// using namespace Eigen;
+#incldue<>
+#include<GLFW/glfw3.h>
+
+using namespace Eigen;
+
 const float fovy = (float) M_PI/4;
 const float zNear = 0.1f;
 const float zFar = 10.0f;
+
 int width = 1280;
 int height = 720;
+
 bool leftMousePressed = false;
 bool rightMousePressed = false;
 double lastX;
@@ -22,7 +25,9 @@ float phi = -0.70f;
 float zoom = 4.0f;
 glm::vec3 lookAt = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 cameraPosition;
-glm::mat4 projection;
+
+glm::vec4 projection;
+
 bool init(int argc, char const *argv[]);
 void errorCallback(int error, const char *description);
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
