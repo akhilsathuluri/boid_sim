@@ -91,15 +91,15 @@ void runSim(){
 			// Update velocities due to alignment and cohesion
 			velocity2[3*i+0] = (velcenter[3*i+0]-velocities[3*i+0])/2.0f;
 			velocity2[3*i+1] = (velcenter[3*i+1]-velocities[3*i+1])/2.0f;
-			velocity1[3*i+0] = (center[3*i+0]-vertices[3*i+0])/50.0f;
-			velocity1[3*i+1] = (center[3*i+1]-vertices[3*i+1])/50.0f;
+			velocity1[3*i+0] = (center[3*i+0]-vertices[3*i+0])/100.0f;
+			velocity1[3*i+1] = (center[3*i+1]-vertices[3*i+1])/100.0f;
 		}
 	}
 
 	for(int i=0;i<N;i++){
 		//Update all the new vertices
-		velocities[3*i+0] += velocity2[3*i+0]+velocity1[3*i+0]+repel[3*i+0]+(LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO))))/20.0f;
-		velocities[3*i+1] += velocity2[3*i+1]+velocity1[3*i+1]+repel[3*i+1]+(LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO))))/20.0f;
+		velocities[3*i+0] += velocity2[3*i+0]+velocity1[3*i+0]+0.2*repel[3*i+0]+(LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO))))/30.0f;
+		velocities[3*i+1] += velocity2[3*i+1]+velocity1[3*i+1]+0.2*repel[3*i+1]+(LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO))))/30.0f;
 			// if (fabs(velocities[3*i+0])>speed_limit) {
 			// 	//velocities[3*i+0] += velocity1[3*i+0]+0*velocity2[3*i+0]+0*repel[3*i+0];
 			// 	velocities[3*i+0] = sign_of(velocities[3*i+0])*speed_limit;
