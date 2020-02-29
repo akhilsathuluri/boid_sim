@@ -3,7 +3,6 @@
 
 // Main function
 int main(int argc, char const *argv[]){
-	srand (static_cast <unsigned> (time(0)));
 	init(argc, argv);
 	mainloop();
 	return 0;
@@ -43,19 +42,15 @@ int mainloop(){
 
 // Normal velocity update
 void runSim(){
-
-	// for(int i=0;i<N;i++){
-	// center[3*i+0]=0.0f;
-	// center[3*i+1]=0.0f;
-	// center[3*i+2]=0.0f;
-	// velcenter[3*i+0]=0.0f;
-	// velcenter[3*i+1]=0.0f;
-	// velcenter[3*i+2]=0.0f;
-	// repel[3*i+0]=0.0f;
-	// repel[3*i+1]=0.0f;
-	// repel[3*i+2]=0.0f;
-	// }
+	float center[3*N];
+	float velcenter[3*N];
+	float repel[3*N];
+	float velocity1[3*N];
+	float velocity2[3*N];
 	for(int i=0;i<N;i++){
+		//std::cout<<"vertex-1 "<<i<<": "<<vertices[0]<<", "<<vertices[1]<<", "<<vertices[2]<<std::endl;
+		//std::cout<<"vertex-2 "<<i<<": "<<vertices[3]<<", "<<vertices[4]<<", "<<vertices[5]<<std::endl;
+		//Initialising to 0
 		center[3*i+0]=0.0f;
 		center[3*i+1]=0.0f;
 		center[3*i+2]=0.0f;
@@ -65,81 +60,86 @@ void runSim(){
 		repel[3*i+0]=0.0f;
 		repel[3*i+1]=0.0f;
 		repel[3*i+2]=0.0f;
-		count=0;
 		for(int j=0;j<N;j++){
-			dist = compute_dist(vertices[3*i+0], vertices[3*i+1], vertices[3*j+0], vertices[3*j+1]);
-			if(j!=i && dist < dist_thresh){
-				// Alignment
-				velcenter[3*i+0]+=velocities[3*j+0];
-				velcenter[3*i+1]+=velocities[3*j+1];
-				// Cohesion
+			if(j!=i){
 				center[3*i+0]+=vertices[3*j+0];
 				center[3*i+1]+=vertices[3*j+1];
-				//Seperation
-				repel[3*i+0] += (vertices[3*i+0]-vertices[3*j+0])*(dist_thresh-dist);
-				repel[3*i+1] += (vertices[3*i+1]-vertices[3*j+1])*(dist_thresh-dist);
-				count++;
+				// Velocity average
+				velcenter[3*i+0]+=velocities[3*j+0];
+				velcenter[3*i+1]+=velocities[3*j+1];
+				if(compute_dist(vertices[3*i+0], vertices[3*i+1], vertices[3*j+0], vertices[3*j+1]) < dist_thresh){
+					//repel[3*i+0] += vertices[3*i+0]-vertices[3*j+0];
+					//repel[3*i+1] += vertices[3*i+1]-vertices[3*j+1];
+					//Making the repulsion equivalent to a spring force
+					repel[3*i+0] += sign_of(vertices[3*i+0]-vertices[3*j+0])*(dist_thresh-fabs(vertices[3*i+0]-vertices[3*j+0]));
+					repel[3*i+1] += sign_of(vertices[3*i+1]-vertices[3*j+1])*(dist_thresh-fabs(vertices[3*i+1]-vertices[3*j+1]));
+				}
 			}
 		}
-		if (count!=0) {
-			velcenter[3*i+0]=velcenter[3*i+0]/(float)count;
-			velcenter[3*i+1]=velcenter[3*i+1]/(float)count;
-			center[3*i+0]=center[3*i+0]/(float)count;
-			center[3*i+1]=center[3*i+1]/(float)count;
-			repel[3*i+0] = repel[3*i+0]/(float)count;
-			repel[3*i+1] = repel[3*i+1]/(float)count;
-			// Update velocities due to alignment and cohesion
-			velocity2[3*i+0] = (velcenter[3*i+0]-velocities[3*i+0])/2.0f;
-			velocity2[3*i+1] = (velcenter[3*i+1]-velocities[3*i+1])/2.0f;
-			velocity1[3*i+0] = (center[3*i+0]-vertices[3*i+0])/50.0f;
-			velocity1[3*i+1] = (center[3*i+1]-vertices[3*i+1])/50.0f;
-		}
+		//Observations
+		//The more stronger the central factor is more of them move together
+		//The more stronger the common velocity factor the more natural it looks as if theyre moving together
+		//Without repulsion and boundary the boids have infinite space, hence theyll simply reach an equilibrium and keep moving
+		//Current idea of distance doesnt make sense as they do not see any repulsion if they are initiated on top of each other
+		center[3*i+0]=center[3*i+0]/(float)(N-1);
+		center[3*i+1]=center[3*i+1]/(float)(N-1);
+		velcenter[3*i+0]=velcenter[3*i+0]/(float)(N-1);
+		velcenter[3*i+1]=velcenter[3*i+1]/(float)(N-1);
+		//std::cout<<"center "<<i<<": "<<center[3*i+0]<<", "<<center[3*i+1]<<", "<<center[3*i+2]<<std::endl;
+		velocity1[3*i+0] = (center[3*i+0]-vertices[3*i+0])/50.0f;
+		velocity1[3*i+1] = (center[3*i+1]-vertices[3*i+1])/50.0f;
+		velocity1[3*i+2]=0.0f;
+		velocity2[3*i+0] = (velcenter[3*i+0]-velocities[3*i+0])/8.0f;
+		velocity2[3*i+1] = (velcenter[3*i+1]-velocities[3*i+1])/8.0f;
+		velocity2[3*i+2]=0.0f;
 	}
 
 	for(int i=0;i<N;i++){
 		//Update all the new vertices
-		velocities[3*i+0] += velocity2[3*i+0]+velocity1[3*i+0]+repel[3*i+0]+(LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO))))/20.0f;
-		velocities[3*i+1] += velocity2[3*i+1]+velocity1[3*i+1]+repel[3*i+1]+(LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO))))/20.0f;
-			// if (fabs(velocities[3*i+0])>speed_limit) {
-			// 	//velocities[3*i+0] += velocity1[3*i+0]+0*velocity2[3*i+0]+0*repel[3*i+0];
-			// 	velocities[3*i+0] = sign_of(velocities[3*i+0])*speed_limit;
-			// }
-			// if (fabs(velocities[3*i+1])>speed_limit) {
-			// 		//velocities[3*i+1] += velocity1[3*i+1]+0*velocity2[3*i+1]+0*repel[3*i+1];
-			// 		velocities[3*i+1] = sign_of(velocities[3*i+1])*speed_limit;
-			// }
+		//vertices[3*i+0]+=(velocities[3*i+0]/3.0f+velocity1[3*i+0]+velocity2[3*i+0]+repel[3*i+0])*step;
+		//vertices[3*i+1]+=(velocities[3*i+1]/3.0f+velocity1[3*i+1]+velocity2[3*i+1]+repel[3*i+1])*step;
+		//Update all the new velocities
+		if (fabs(velocities[3*i+0])<speed_limit) {
+			velocities[3*i+0] += velocity1[3*i+0]+velocity2[3*i+0]+repel[3*i+0];
+		}
+		if (fabs(velocities[3*i+1])<speed_limit) {
+				velocities[3*i+1] += velocity1[3*i+1]+velocity2[3*i+1]+repel[3*i+1];
+		}
 		//Update vertices
 		vertices[3*i+0]+=velocities[3*i+0]*step;
 		vertices[3*i+1]+=velocities[3*i+1]*step;
-		//std::cout<<"vertex: "<<vertices[3*i+0]<<", "<<vertices[3*i+1]<<", "<<vertices[3*i+2]<<" : "<<indices[i]<<std::endl;
 		// Bounding visual to the viewable space. Changing it to a elastic wall
-		if(vertices[3*i+0]>1){
-			// velocities[3*i+0]=-penal_vel;
-			vertices[3*i+0]=-1;
-		}
-		if(vertices[3*i+0]<-1){
-			// velocities[3*i+0]=penal_vel;
-			vertices[3*i+0]=1;
-		}
-		if(vertices[3*i+1]<-1){
-			// velocities[3*i+1]=penal_vel;
-			vertices[3*i+1]=1;
-		}
-		if(vertices[3*i+1]>1){
-			// velocities[3*i+1]=-penal_vel;
-			vertices[3*i+1]=-1;
-		}
-		// if(vertices[3*i+1]>1 or vertices[3*i+1]<-1){
-		// velocities[3*i+1]*=-1;
+		// if(vertices[3*i+0]>1){
+		// 	velocities[3*i+0]=-penal_vel;
+		// 	//vertices[3*i+0]=-1;
 		// }
-		// if(vertices[3*i+0]>1 or vertices[3*i+0]<-1){
-		// velocities[3*i+0]*=-1;
+		// if(vertices[3*i+0]<-1){
+		// 	velocities[3*i+0]=penal_vel;
+		// 	//vertices[3*i+0]=1;
 		// }
+		// if(vertices[3*i+1]<-1){
+		// 	velocities[3*i+1]=penal_vel;
+		// 	//vertices[3*i+1]=1;
+		// }
+		// if(vertices[3*i+1]>1){
+		// 	velocities[3*i+1]=-penal_vel;
+		// 	//vertices[3*i+1]=-1;
+		// }
+		if(vertices[3*i+1]>1 or vertices[3*i+1]<-1){
+		velocities[3*i+1]*=-1;
+		}
+		if(vertices[3*i+0]>1 or vertices[3*i+0]<-1){
+		velocities[3*i+0]*=-1;
+		}
 	}
 	//Once the value is returned from all the rules check if they are within the screen
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
 }
+
+//float rule1_velocity(){
+	//Move rule 1 stuff into this function and return pointer for velocity1
+//}
 
 int sign_of(float val){
 	if(val>0) return 1;
@@ -197,21 +197,19 @@ bool init(int argc, char const *argv[]){
 void initVAO(){
 	// Declaring the vertices randomly
 	for(int i=0;i<N;i++){
-	//vertices[3*i+0]= (float)(rand()%2);
-	vertices[3*i+0]= LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
-	//vertices[3*i+0]= ;
-	vertices[3*i+1]= LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO)));
+	vertices[3*i+0]= (float)(rand()%10)/20.0f;
+	vertices[3*i+1]= (float)(rand()%10)/20.0f;
 	vertices[3*i+2]= 0.0f;
 	indices[i]=i;
-	//velocities[3*i+0]= (float)(rand()%10)/15.0f;
-	velocities[3*i+0]= LO_v + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI_v-LO_v)));
-	// velocities[3*i+1]= (float)(rand()%10)/15.0f;
-	velocities[3*i+1]= LO_v + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI_v-LO_v)));
+
+	velocities[3*i+0]= (float)(rand()%10)/20.0f;
+	velocities[3*i+1]= (float)(rand()%10)/20.0f;
 	velocities[3*i+2]= 0.0f;
 
 	//std::cout<<"vertex: "<<vertices[3*i+0]<<", "<<vertices[3*i+1]<<", "<<vertices[3*i+2]<<" : "<<indices[i]<<std::endl;
 	//std::cout<<"velocity: "<<velocities[3*i+0]<<", "<<velocities[3*i+1]<<", "<<velocities[3*i+2]<<std::endl;
 	}
+		std::cout<<"testing"<<std::endl;
 		glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);

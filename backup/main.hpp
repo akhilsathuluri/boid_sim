@@ -6,45 +6,30 @@
 #include<stdlib.h>
 #include<memory>
 #include<unistd.h>
-//#include<random>
 #include<cmath>
-#include<ctime>
-
 //#include<Eigen/Dense>
-//std::uniform_int_distribution<int> gen(-1.0f, 1.0f);
+
 // glfw
 const unsigned int width = 800;
 const unsigned int height = 600;
 //const unsigned int width = 200;
 //const unsigned int height = 200;
 GLFWwindow* window;
-float LO = -1.0f;
-float HI = 1.0f;
-float LO_v = -1.0f;
-float HI_v = 1.0f;
 
 //Changeable parameters
 //boids
 const int N = 500;
-const float pointSize = 7.0f;
+const float pointSize = 5.0f;
 //float step = 0.005;
-float step = 0.02f;
-float dist_thresh = 0.075f;
-float penal_vel=0.25f;
-float speed_limit = 0.1f;
-int count;
+float step = 0.05;
+float dist_thresh = 0.032;
+float penal_vel=0.25;
+float speed_limit = 4.0;
 //Initiate all the vertices here
 float vertices[3*N];
 float velocities[3*N];
 unsigned int indices[N];
 
-//Sim variables
-float center[3*N];
-float velcenter[3*N];
-float repel[3*N];
-float velocity1[3*N];
-float velocity2[3*N];
-float dist=0;
 
 // openGL variables
 unsigned int VBO, VAO, EBO;
