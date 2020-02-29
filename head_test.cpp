@@ -7,9 +7,7 @@
 #include<memory>
 #include<unistd.h>
 #include<cmath>
-//#include<Eigen/Dense>
 
-// glfw 
 const unsigned int width = 800;
 const unsigned int height = 600;
 //const unsigned int width = 200;
@@ -59,3 +57,9 @@ int mainloop();
 float compute_dist(float b1x, float b1y, float b2x, float b2y);
 void runSim();
 int sign_of(float val);
+
+
+int main(int argc, char const *argv[]) {
+  printf("Just testing");
+  return 0;
+}

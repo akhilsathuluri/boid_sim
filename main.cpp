@@ -12,26 +12,26 @@ int mainloop(){
 	// Bind buffer
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	while(!glfwWindowShouldClose(window)){
-		
+
 		//Run simulation and copy the new points to VBO
 		runSim();
-		
+
 		// to set the color whenever glClear is called
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        
+
         glUseProgram(shaderProgram);
-     
+
         glBindVertexArray(VAO);
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glDrawElements(GL_POINTS, N, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
-       
+
         glfwSwapBuffers(window);
-        glfwPollEvents();        
+        glfwPollEvents();
 	}
 	// Unbind buffer
-	glBindBuffer(GL_ARRAY_BUFFER, 0); 
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
@@ -93,7 +93,7 @@ void runSim(){
 		velocity2[3*i+1] = (velcenter[3*i+1]-velocities[3*i+1])/8.0f;
 		velocity2[3*i+2]=0.0f;
 	}
-	
+
 	for(int i=0;i<N;i++){
 		//Update all the new vertices
 		//vertices[3*i+0]+=(velocities[3*i+0]/3.0f+velocity1[3*i+0]+velocity2[3*i+0]+repel[3*i+0])*step;
@@ -124,7 +124,7 @@ void runSim(){
 		//}
 	}
 	//Once the value is returned from all the rules check if they are within the screen
-	
+
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
 }
 
@@ -166,7 +166,11 @@ bool init(int argc, char const *argv[]){
 	}
 	glfwMakeContextCurrent(window);
 	glfwSetKeyCallback(window, keyCallback);
-	
+
+	// Making all the extensions valid
+	glewExperimental = GL_TRUE;
+	glewInit();
+
 	if(glewInit() !=GLEW_OK){
 		std::cout
 		<< "Error initialising GLEW\n"
@@ -174,10 +178,8 @@ bool init(int argc, char const *argv[]){
 		<<std::endl;
 		return false;
 	}
-	
 	// Initialise shaders
 	initShaders();
-	
 	//Initialise drawing state
 	initVAO();
 	return true;
@@ -190,18 +192,19 @@ void initVAO(){
 	vertices[3*i+1]= (float)(rand()%10)/20.0f;
 	vertices[3*i+2]= 0.0f;
 	indices[i]=i;
-	
+
 	velocities[3*i+0]= (float)(rand()%10)/20.0f;
 	velocities[3*i+1]= (float)(rand()%10)/20.0f;
 	velocities[3*i+2]= 0.0f;
-	
+
 	//std::cout<<"vertex: "<<vertices[3*i+0]<<", "<<vertices[3*i+1]<<", "<<vertices[3*i+2]<<" : "<<indices[i]<<std::endl;
 	//std::cout<<"velocity: "<<velocities[3*i+0]<<", "<<velocities[3*i+1]<<", "<<velocities[3*i+2]<<std::endl;
 	}
-
-	glGenVertexArrays(1, &VAO);
+		std::cout<<"testing"<<std::endl;
+		glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
+
     // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
     glBindVertexArray(VAO);
 
@@ -214,10 +217,10 @@ void initVAO(){
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0); 
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// Unbind VAO
-    glBindVertexArray(0); 
+    glBindVertexArray(0);
 }
 
 void initShaders(){
