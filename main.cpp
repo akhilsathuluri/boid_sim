@@ -98,6 +98,7 @@ void runSim(){
 
 	for(int i=0;i<N;i++){
 		//Update all the new vertices
+		// Since we are only updating the vertices, I have observed that the particles lose energy and tend to reach a slow moving state. To make it more exciting added a small random velocity to the motion.
 		velocities[3*i+0] += velocity2[3*i+0]+velocity1[3*i+0]+0.2*repel[3*i+0]+(LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO))))/30.0f;
 		velocities[3*i+1] += velocity2[3*i+1]+velocity1[3*i+1]+0.2*repel[3*i+1]+(LO + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(HI-LO))))/30.0f;
 			// if (fabs(velocities[3*i+0])>speed_limit) {
